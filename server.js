@@ -50,6 +50,12 @@ io.on("connection", (socket) => {
     io.to(user.room).emit("message", formatMessage(user.username, msg));
   });
 
+  // Listen for keyPress
+  socket.on("activity", (username) => {
+    const user = getCurrentUser(username);
+    socket.broadcast.emit("activity", user);
+  });
+
   // Runs when client disconnects
   socket.on("disconnect", () => {
     const user = userLeave(socket.id);

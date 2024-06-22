@@ -2,6 +2,8 @@ const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
 const roomName = document.getElementById("room-name");
 const userList = document.getElementById("users");
+const msgInput = document.getElementById("msg");
+const typingActivity = document.querySelector(".typing");
 
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
@@ -20,7 +22,7 @@ socket.on("roomUsers", ({ room, users }) => {
 
 // Message from server
 socket.on("message", (message) => {
-  console.log(message);
+  typingActivity.textContent = "";
   outputMessage(message);
 
   //   Scroll down
@@ -40,6 +42,23 @@ chatForm.addEventListener("submit", (e) => {
   //   Clear input
   e.target.elements.msg.value = "";
   e.target.elements.msg.focus();
+});
+
+// Typing Activity
+msgInput.addEventListener("keypress", () => {
+  socket.emit("activity", socket.id);
+});
+
+let activityTimer;
+
+socket.on("activity", (user) => {
+  typingActivity.textContent = `${user.username} is typing...`;
+
+  // Clear after 3 seconds
+  clearTimeout(activityTimer);
+  activityTimer = setTimeout(() => {
+    typingActivity.textContent = "";
+  }, 3000);
 });
 
 // Output message to DOM
